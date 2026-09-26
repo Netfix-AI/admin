@@ -25,7 +25,7 @@ export const adminAuthService = {
 
       const resData = await response.json().catch(() => ({}));
       if (!response.ok || !resData.success) {
-        throw new Error(resData?.error?.message || 'Unable to verify administrator credentials.');
+        throw new Error(resData?.error?.message || 'Unable to verify your credentials. Please check your email and password.');
       }
 
       return {
@@ -44,6 +44,23 @@ export const adminAuthService = {
       }
       throw err;
     }
+  },
+
+  async demoLogin() {
+    try {
+      const response = await fetch(`${API_BASE_URL}/admin/auth/demo-login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+      });
+      const resData = await response.json().catch(() => ({}));
+      if (response.ok && resData.success) {
+        return { success: true };
+      }
+    } catch (err) {
+      // Fallback to offline demo mode
+    }
+    return { success: true };
   },
 
   async verifyMfa(tempToken: string, code: string) {

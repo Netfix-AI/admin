@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Eye, EyeOff, ArrowRight, Loader2, Lock, Mail } from 'lucide-react';
+import { Eye, EyeOff, ArrowRight, Loader2, Lock, Mail, Users } from 'lucide-react';
 import { adminAuthService } from '../../services/adminService';
 import { AdminStepIndicator } from '../common/AdminStepIndicator';
 
@@ -12,14 +12,16 @@ interface AdminLoginProps {
     otpauthUrl?: string,
     qrCodeDataUrl?: string
   ) => void;
+  onDemoLogin?: () => void;
 }
 
-export const AdminLogin: React.FC<AdminLoginProps> = ({ onNextStep }) => {
-  const [email, setEmail] = useState('admin@netfixai.com');
+export const AdminLogin: React.FC<AdminLoginProps> = ({ onNextStep, onDemoLogin }) => {
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingDemo, setIsLoadingDemo] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -40,9 +42,24 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onNextStep }) => {
         );
       }
     } catch (err: any) {
-      setErrorMessage(err.message || 'Unable to verify administrator credentials.');
+      setErrorMessage(err.message || 'Unable to verify your credentials. Please check your email and password.');
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleDemoLogin = async () => {
+    setErrorMessage(null);
+    try {
+      setIsLoadingDemo(true);
+      await adminAuthService.demoLogin();
+      if (onDemoLogin) {
+        onDemoLogin();
+      }
+    } catch (err: any) {
+      setErrorMessage(err.message || 'Demo login failed.');
+    } finally {
+      setIsLoadingDemo(false);
     }
   };
 
@@ -147,7 +164,7 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onNextStep }) => {
         <div className="pt-3">
           <button
             type="submit"
-            disabled={isLoading}
+            disabled={isLoading || isLoadingDemo}
             className="w-full py-3.5 px-6 rounded-xl font-bold text-base text-white bg-[#00B8FF] hover:bg-[#0098D4] shadow-[0_0_25px_rgba(0,184,255,0.4)] hover:shadow-[0_0_35px_rgba(0,184,255,0.6)] transition-all flex items-center justify-center gap-2 min-h-[48px] cursor-pointer hover:scale-[1.01] active:scale-[0.98] disabled:opacity-70"
           >
             {isLoading ? (
@@ -163,7 +180,41 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onNextStep }) => {
             )}
           </button>
         </div>
+
+        {/* OR Divider */}
+        <div className="relative my-4 flex items-center justify-center">
+          <div className="absolute inset-0 flex items-center">
+            <div className="w-full border-t border-slate-700/60" />
+          </div>
+          <div className="relative bg-[#04121F] px-3 text-[11px] font-semibold tracking-wider text-slate-400 uppercase">
+            OR
+          </div>
+        </div>
+
+        {/* Demo Login Button */}
+        <div>
+          <button
+            type="button"
+            onClick={handleDemoLogin}
+            disabled={isLoading || isLoadingDemo}
+            className="w-full py-3.5 px-5 rounded-xl font-bold text-sm sm:text-base text-white bg-[#041828]/80 hover:bg-[#00B8FF]/10 border border-[#00B8FF]/40 hover:border-[#00B8FF] shadow-[0_0_15px_rgba(0,184,255,0.1)] hover:shadow-[0_0_25px_rgba(0,184,255,0.25)] transition-all flex items-center justify-between gap-3 min-h-[48px] cursor-pointer group hover:scale-[1.005] active:scale-[0.99] disabled:opacity-70"
+          >
+            <div className="flex items-center gap-2.5">
+              <Users className="w-4 h-4 sm:w-5 sm:h-5 text-[#00B8FF]" />
+              <span>Demo Login</span>
+            </div>
+            {isLoadingDemo ? (
+              <Loader2 className="w-4 h-4 animate-spin text-[#00B8FF]" />
+            ) : (
+              <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-white transition-colors" />
+            )}
+          </button>
+          <p className="text-[11px] text-slate-400 text-center mt-2 font-medium">
+            Use demo mode to explore the Admin dashboard without MFA.
+          </p>
+        </div>
       </form>
     </div>
   );
 };
+

@@ -26,7 +26,7 @@ export function App() {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
   // Admin Auth Flow State
-  const [userEmail, setUserEmail] = useState('admin@netfixai.com');
+  const [userEmail, setUserEmail] = useState('');
   const [tempToken, setTempToken] = useState<string>('temp_pwd_verified');
   const [isFirstTimeMfa, setIsFirstTimeMfa] = useState<boolean>(false);
   const [mfaSecret, setMfaSecret] = useState<string | undefined>('JBSWY3DPEHPK3PXP');
@@ -121,6 +121,10 @@ export function App() {
               setOtpauthUrl(otpUrlVal);
               setQrCodeDataUrl(qrDataVal);
               navigate('/admin/login/mfa');
+            }}
+            onDemoLogin={() => {
+              setIsAuthenticated(true);
+              navigate('/admin/dashboard');
             }}
           />
         )}
